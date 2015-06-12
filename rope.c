@@ -7,6 +7,12 @@
 			fprintf(stderr, "[!] Memory allocation failed.\n"); \
 			return NULL; } } while (0);
 
+typedef struct {
+	size_t	len;	// 8 bytes ; length of the string
+	size_t	cap;	// 8 bytes ; capacity of the string
+	char	buf[];	// 0 bytes
+} rope_t;
+
 static inline rope_t* getrope(const char*);
 
 char* rope_new(const char* str)
@@ -29,10 +35,16 @@ char* rope_new(const char* str)
 	return r->buf;
 }
 
+void rope_free(const char* str)
+{
+	if (str != NULL)
+		free(getrope(str));
+}
+
 char* rope_extend(char* str, const char* more)
 {
 	rope_t*	r;
-	size_t	oldlen;		// TODO: Redundant, remote
+	size_t	oldlen;		// TODO: Redundant, remove?
 	size_t	oldcap;
 	size_t	newlen;
 	size_t	newcap;
@@ -102,33 +114,4 @@ void check_null(const char* str)
 	}
 	printf("<\n");
 }
-
-
-
-
-
-#if 0
-bool rope_extend(rope** r, const char* str)
-{
-	rope*	tmp	= *r;		// if realloc fails
-	char*	buf	= (*r)->buf;
-	size_t	old_len	= (*r)->len;
-	size_t	new_len	= old_len + strlen(str);
-	char*	last;
-
-	*r = realloc(*r, sizeof(r) + new_len + 1);
-
-	if (*r == NULL) {
-		printf(">>>realloc FAILED<<<\n");
-		*r = tmp;
-		return false;
-	}
-
-	(*r)->len = new_len;
-	last = &buf[strlen(buf)];	// Pointer to 0-byte of r->buf
-	strcpy(last, str);
-
-	return true;
-}
-#endif
 
