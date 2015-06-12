@@ -15,12 +15,12 @@ typedef char* rope;
  *	Create a new rope from `str` and return a pointer to the newly created
  *	string. The returned string is always 0-terminated.
  *----------------------------------------------------------------------------*/
-char*	rope_new (const char* str);
+char* rope_new (const char* str);
 
 /*------------------------------------------------------------------------------
  *	Free the rope unless `str` is equal to NULL; then nothing is done.
  *----------------------------------------------------------------------------*/
-void rope_free(const char* str);
+void rope_free (const char* str);
 
 /*------------------------------------------------------------------------------
  *	Append `more` to `str`. The result is null terminated.
@@ -30,13 +30,13 @@ void rope_free(const char* str);
  *		r = rope_extend(r, "Appended text");
  *----------------------------------------------------------------------------*/
 char* rope_extend (char*	str,
-		  const char*	more);
+		   const char*	more);
 
 /*------------------------------------------------------------------------------
  *	Print the rope in the following format:
  *		"example": { len = 7, cap = <the capacity> }
  *----------------------------------------------------------------------------*/
-void rope_print (const char* str);
+char* rope_info (const char* str);
 
 /*------------------------------------------------------------------------------
  *	Return the length of `str`, excluding the terminating 0-byte.
@@ -47,8 +47,6 @@ size_t ropelen (const char* str);
  *	Return the capacity of `str`.
  *----------------------------------------------------------------------------*/
 size_t ropecap (const char* str);
-
-void check_null (const char* str);
 
 #endif
 

@@ -79,7 +79,7 @@ char* rope_extend(char* str, const char* more)
 	return r->buf;
 }
 
-void rope_print(const char* str)
+char* rope_info(const char* str)
 {
 	printf("\"%s\": { len = %zu, cap = %zu }\n",
 			str, ropelen(str), ropecap(str));
@@ -103,15 +103,5 @@ static inline rope_t* getrope(const char* str)
 {
 	rope_t* r = (void*) (str - sizeof(*r));
 	return r;
-}
-
-void check_null(const char* str)
-{
-	rope_t* r = getrope(str);
-	printf("Checking so that the string is null terminated:\n");
-	for (int i = 0; r->buf[i] != '\0'; ++i) {
-		printf("%c", r->buf[i]);
-	}
-	printf("<\n");
 }
 
