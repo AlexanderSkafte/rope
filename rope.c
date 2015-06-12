@@ -13,7 +13,13 @@ typedef struct {
 	char	buf[];	// 0 bytes
 } rope_t;
 
+typedef enum {
+	POS_FIRST,
+	POS_LAST,
+} position_t;
+
 static inline rope_t* getrope(const char*);
+static inline char* rope_insert(char* str, const char* more, position_t pos);
 
 char* rope_new(const char* str)
 {
@@ -41,45 +47,17 @@ void rope_free(const char* str)
 		free(getrope(str));
 }
 
-char* rope_extend(char* str, const char* more)
+char* rope_prepend(char* str, const char* more)
 {
-	rope_t*	r;
-	size_t	oldlen;		// TODO: Redundant, remove?
-	size_t	oldcap;
-	size_t	newlen;
-	size_t	newcap;
-
-	if (str == NULL) {
-		fprintf(stderr,
-			"[!] rope_extend: (arg 1): no string to extend.\n");
-		return str;
-	}
-
-	if (more == NULL) { return str; }
-
-	r	= getrope(str);
-	oldlen	= r->len;
-	oldcap	= r->cap;
-	newlen	= oldlen + strlen(more);
-	newcap	= oldcap;
-
-	while (newcap < newlen) {
-		newcap *= PHI;
-	}
-
-	if (newlen > oldcap) {
-		// TODO: Do this more safely.
-		r = realloc(r, sizeof(*r) + newcap + 1);
-	}
-
-	r->len = newlen;
-	r->cap = newcap;
-	memcpy(&r->buf[strlen(r->buf)], more, strlen(more));
-
-	return r->buf;
+	return rope_insert(str, more, POS_FIRST);
 }
 
-char* rope_info(const char* str)
+char* rope_append(char* str, const char* more)
+{
+	return rope_insert(str, more, POS_LAST);
+}
+
+void rope_info(const char* str)
 {
 	printf("\"%s\": { len = %zu, cap = %zu }\n",
 			str, ropelen(str), ropecap(str));
@@ -104,4 +82,118 @@ static inline rope_t* getrope(const char* str)
 	rope_t* r = (void*) (str - sizeof(*r));
 	return r;
 }
+
+static inline char* rope_insert(char* str, const char* more, position_t pos)
+{
+	rope_t*	r;
+	size_t	newlen;
+	size_t	newcap;
+
+	const char* where =	  pos == POS_FIRST	? "prepend"
+				: pos == POS_LAST	? "append" : "???";
+
+	if (str == NULL) {
+		fprintf(stderr,
+			"[!] rope_%s: (arg #1): No string to %s.\n",
+			where, where);
+		return NULL;
+	}
+
+	if (more == NULL) {
+		return str;
+	}
+
+	r	= getrope(str);
+	newlen	= r->len + strlen(more);
+	newcap	= r->cap == 0
+			? strlen(more)
+			: r->cap;
+
+	while (newcap < newlen) {
+		newcap *= PHI;
+	}
+
+	if (newlen > r->cap) {
+		r = realloc(r, sizeof(*r) + newcap + 1);
+		if (r == NULL) {
+			fprintf(stderr, "[!] rope_%s: Realloc failed.\n",
+				where);
+			return str;
+		}
+	}
+
+	r->len = newlen;
+	r->cap = newcap;
+
+	if (pos == POS_FIRST)
+	{
+		/* Buffer to hold the original string */
+		char buffer[strlen(r->buf) + 1];
+
+		/* Copy the original string to the buffer */
+		memcpy(buffer, r->buf, strlen(r->buf) + 1);
+
+		/* Write the new string to the beginning of the original one */
+		memcpy(r->buf, more, strlen(more));
+
+		/* Write the original string to the end of the new string */
+		memcpy(&r->buf[strlen(more)], buffer, strlen(buffer));
+
+		/* 0-terminate the string */
+		r->buf[strlen(r->buf)] = '\0';
+
+	}
+	else if (pos == POS_LAST)
+	{
+		memcpy(&r->buf[strlen(r->buf)], more, strlen(more));
+		r->buf[strlen(r->buf)] = '\0';
+	}
+	else
+	{
+		fprintf(stderr, "[!] Implementation error in `rope_insert`.\n");
+		exit(1);
+	}
+
+	return r->buf;
+}
+
+
+
+
+
+#define ROPE_XPEND(X)							       \
+	rope_t*	r;							       \
+	size_t	newlen;							       \
+	size_t	newcap;							       \
+									       \
+	if (str == NULL) {						       \
+		fprintf(stderr,						       \
+			"[!] rope_#X: (arg #1): No string to #X.\n");	       \
+		return NULL;						       \
+	}								       \
+									       \
+	if (more == NULL) {						       \
+		return str;						       \
+	}								       \
+									       \
+	r	= getrope(str);						       \
+	newlen	= r->len + strlen(more);				       \
+	newcap	= r->cap == 0						       \
+			? strlen(more)					       \
+			: r->cap;					       \
+									       \
+	while (newcap < newlen) {					       \
+		newcap *= PHI;						       \
+	}								       \
+									       \
+	if (newlen > r->cap) {						       \
+		r = realloc(r, sizeof(*r) + newcap + 1);		       \
+		if (r == NULL) {					       \
+			fprintf(stderr, "[!] rope_#X: Realloc failed.\n");     \
+			return str;					       \
+		}							       \
+	}								       \
+									       \
+	r->len = newlen;						       \
+	r->cap = newcap;
 

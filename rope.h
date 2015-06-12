@@ -23,20 +23,38 @@ char* rope_new (const char* str);
 void rope_free (const char* str);
 
 /*------------------------------------------------------------------------------
- *	Append `more` to `str`. The result is null terminated.
- *	`str` is not safe to use after this function has been called.
- *	You should always assign `str` to the return value of the function:
+ *	Append `more` to `str`, where `str` must be a rope string. The result is
+ *	null terminated. `str` is not safe to use after this function has been
+ *	called. Thus, you should always assign `str` to the return value of the
+ *	function:
  *
- *		r = rope_extend(r, "Appended text");
+ *		r = rope_append(r, "Appended text");
+ *
+ *	If the application runs out of memory because enough memory could not be
+ *	found, `str` is returned.
  *----------------------------------------------------------------------------*/
-char* rope_extend (char*	str,
+char* rope_append (char*	str,
 		   const char*	more);
+
+/*------------------------------------------------------------------------------
+ *	Prepend `more` to `str`, where `str` must be a rope string. The result
+ *	is null terminated. `str` is not safe to use after this function has
+ *	been called. Thus, you should always assign `str` to the return value of
+ *	the function:
+ *
+ *		r = rope_prepend(r, "Appended text");
+ *
+ *	If the application runs out of memory because enough memory could not be
+ *	found, `str` is returned.
+ *----------------------------------------------------------------------------*/
+char* rope_prepend (char*	str,
+		    const char*	more);
 
 /*------------------------------------------------------------------------------
  *	Print the rope in the following format:
  *		"example": { len = 7, cap = <the capacity> }
  *----------------------------------------------------------------------------*/
-char* rope_info (const char* str);
+void rope_info (const char* str);
 
 /*------------------------------------------------------------------------------
  *	Return the length of `str`, excluding the terminating 0-byte.
